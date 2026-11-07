@@ -1,3 +1,4 @@
+# Este es el archivo del inventario
 def Cargar_Inventario():
     Productos = []
     try:
