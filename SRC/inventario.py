@@ -1,34 +1,40 @@
 def Cargar_Inventario():
     Productos = []
-    Archivo = open("DATA/inventario.txt", "r")
-    for Linea in Archivo:
-        Datos = Linea.strip().split("|")
-        if len(Datos) == 7:
-            Producto = {
-                "Codigo": Datos[0],
-                "Nombre": Datos[1],
-                "Categoria": Datos[2],
-                "Precio": float(Datos[3]),
-                "Stock": int(Datos[4]),
-                "Stock_Minimo": int(Datos[5]),
-                "Proveedor": Datos[6]
-            }
-            Productos.append(Producto)
-    Archivo.close()
+    try:
+        with open("DATA/inventario.txt", "r") as Archivo:
+            for Linea in Archivo:
+                Datos = Linea.strip().split("|")
+                try:
+                    if len(Datos) == 7:
+                        Producto = {
+                            "Codigo": Datos[0],
+                            "Nombre": Datos[1],
+                            "Categoria": Datos[2],
+                            "Precio": float(Datos[3]),
+                            "Stock": int(Datos[4]),
+                            "Stock_Minimo": int(Datos[5]),
+                            "Proveedor": Datos[6]
+                        }
+                        Productos.append(Producto)
+                    else:
+                        print("Advertencia: se encontró una línea incorrecta.")
+                except ValueError:
+                    print("Advertencia: se omitió un producto con datos numéricos incorrectos.")
+    except FileNotFoundError:
+        print("El archivo de inventario no existe. Se iniciará vacío.")
     return Productos
 def Guardar_Inventario(Productos):
-    Archivo = open("DATA/inventario.txt", "w")
-    for i in range(len(Productos)):
-        Archivo.write(
-            Productos[i]["Codigo"] + "|" +
-            Productos[i]["Nombre"] + "|" +
-            Productos[i]["Categoria"] + "|" +
-            str(Productos[i]["Precio"]) + "|" +
-            str(Productos[i]["Stock"]) + "|" +
-            str(Productos[i]["Stock_Minimo"]) + "|" +
-            Productos[i]["Proveedor"] + "\n"
-        )
-    Archivo.close()
+    with open("DATA/inventario.txt", "w") as Archivo:
+        for i in range(len(Productos)):
+            Archivo.write(
+                Productos[i]["Codigo"] + "|" +
+                Productos[i]["Nombre"] + "|" +
+                Productos[i]["Categoria"] + "|" +
+                str(Productos[i]["Precio"]) + "|" +
+                str(Productos[i]["Stock"]) + "|" +
+                str(Productos[i]["Stock_Minimo"]) + "|" +
+                Productos[i]["Proveedor"] + "\n"
+            )
 def Validar_Precio(Mensaje):
     while True:
         try:
@@ -49,19 +55,26 @@ def Validar_Stock(Mensaje):
                 print("El stock no puede ser negativo.")
         except ValueError:
             print("Error: debe ingresar un número entero.")
+def Validar_Texto(Mensaje):
+    while True:
+        Texto = input(Mensaje).strip()
+        if Texto != "":
+            return Texto
+        else:
+            print("Este campo no puede estar vacío.")
 def Agregar_Producto(Productos):
     print("\nAgregar nuevo producto")
-    Codigo = input("Código: ")
+    Codigo = Validar_Texto("Código: ")
     for i in range(len(Productos)):
         if Productos[i]["Codigo"] == Codigo:
             print("El código ya existe.")
             return
-    Nombre = input("Nombre: ")
-    Categoria = input("Categoría: ")
+    Nombre = Validar_Texto("Nombre: ")
+    Categoria = Validar_Texto("Categoría: ")
     Precio = Validar_Precio("Precio de venta: ")
     Stock = Validar_Stock("Stock disponible: ")
     Stock_Minimo = Validar_Stock("Stock mínimo: ")
-    Proveedor = input("Proveedor: ")
+    Proveedor = Validar_Texto("Proveedor: ")
     if Precio <= 0 or Stock < 0 or Stock_Minimo < 0:
         print("Los datos ingresados no son válidos.")
         return
@@ -98,7 +111,7 @@ def Buscar_Producto(Productos):
     Opcion = input("Seleccione una opción: ")
     Encontrado = False
     if Opcion == "1":
-        Codigo = input("Ingrese el código del producto: ")
+        Codigo = Validar_Texto("Ingrese el código del producto: ")
         for i in range(len(Productos)):
             if Productos[i]["Codigo"] == Codigo:
                 print("\nCódigo:", Productos[i]["Codigo"])
@@ -110,7 +123,7 @@ def Buscar_Producto(Productos):
                 print("Proveedor:", Productos[i]["Proveedor"])
                 Encontrado = True
     elif Opcion == "2":
-        Categoria = input("Ingrese la categoría: ")
+        Categoria = Validar_Texto("Ingrese la categoría: ")
         for i in range(len(Productos)):
             if Productos[i]["Categoria"].lower() == Categoria.lower():
                 print("\nCódigo:", Productos[i]["Codigo"])
@@ -128,7 +141,7 @@ def Buscar_Producto(Productos):
         print("Producto no encontrado.")
 def Modificar_Producto(Productos):
     print("\nModificar producto")
-    Codigo = input("Ingrese el código del producto: ")
+    Codigo = Validar_Texto("Ingrese el código del producto: ")
     Encontrado = False
     for i in range(len(Productos)):
         if Productos[i]["Codigo"] == Codigo:
@@ -141,9 +154,9 @@ def Modificar_Producto(Productos):
             print("6. Modificar proveedor")
             Opcion = input("Seleccione qué desea modificar: ")
             if Opcion == "1":
-                Productos[i]["Nombre"] = input("Nuevo nombre: ")
+                Productos[i]["Nombre"] = Validar_Texto("Nuevo nombre: ")
             elif Opcion == "2":
-                Productos[i]["Categoria"] = input("Nueva categoría: ")
+                Productos[i]["Categoria"] = Validar_Texto("Nueva categoría: ")
             elif Opcion == "3":
                 Precio = Validar_Precio("Nuevo precio: ")
                 if Precio > 0:
@@ -166,7 +179,7 @@ def Modificar_Producto(Productos):
                     print("Stock mínimo no válido.")
                     return
             elif Opcion == "6":
-                Productos[i]["Proveedor"] = input("Nuevo proveedor: ")
+                Productos[i]["Proveedor"] = Validar_Texto("Nuevo proveedor: ")
             else:
                 print("Opción no válida.")
                 return
@@ -177,7 +190,7 @@ def Modificar_Producto(Productos):
         print("Producto no encontrado.")
 def Eliminar_Producto(Productos):
     print("\nEliminar producto")
-    Codigo = input("Ingrese el código del producto: ")
+    Codigo = Validar_Texto("Ingrese el código del producto: ")
     for i in range(len(Productos)):
         if Productos[i]["Codigo"] == Codigo:
             Confirmar = input("¿Desea eliminar este producto? (S/N): ")
