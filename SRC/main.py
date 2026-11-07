@@ -1,3 +1,4 @@
+ # Este es el main
 from inventario import Menu_Inventario
 from ventas import Menu_Ventas
 def mostrar_menu():
