@@ -1,3 +1,4 @@
+# Este es el apartado de ventas
 from datetime import date
 from inventario import Cargar_Inventario, Guardar_Inventario
 def Buscar_Por_Codigo(Productos, Codigo):
