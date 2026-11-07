@@ -1,4 +1,5 @@
 from inventario import Menu_Inventario
+from ventas import Menu_Ventas
 def mostrar_menu():
     print("Bienvenido a TiendaPy")
     print("1. Gestionar inventario")
@@ -12,7 +13,7 @@ def main():
         if opcion == "1":
             Menu_Inventario()
         elif opcion == "2":
-            print("Módulo de ventas")
+            Menu_Ventas()
         elif opcion == "3":
             print("Módulo de reportes")
         elif opcion == "4":
