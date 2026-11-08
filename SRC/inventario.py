@@ -36,33 +36,7 @@ def Guardar_Inventario(Productos):
                 str(Productos[i]["Stock_Minimo"]) + "|" +
                 Productos[i]["Proveedor"] + "\n"
             )
-def Validar_Precio(Mensaje):
-    while True:
-        try:
-            Precio = float(input(Mensaje))
-            if Precio > 0:
-                return Precio
-            else:
-                print("El precio debe ser mayor que cero.")
-        except ValueError:
-            print("Error: debe ingresar un número válido.")
-def Validar_Stock(Mensaje):
-    while True:
-        try:
-            Stock = int(input(Mensaje))
-            if Stock >= 0:
-                return Stock
-            else:
-                print("El stock no puede ser negativo.")
-        except ValueError:
-            print("Error: debe ingresar un número entero.")
-def Validar_Texto(Mensaje):
-    while True:
-        Texto = input(Mensaje).strip()
-        if Texto != "":
-            return Texto
-        else:
-            print("Este campo no puede estar vacío.")
+from validaciones import Validar_Texto, Validar_Precio, Validar_Stock, Validar_Opcion, Validar_Confirmacion
 def Agregar_Producto(Productos):
     print("\nAgregar nuevo producto")
     Codigo = Validar_Texto("Código: ")

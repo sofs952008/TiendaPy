@@ -1,49 +1,48 @@
 # Este es el apartado de ventas
 from datetime import date
 from inventario import Cargar_Inventario, Guardar_Inventario
+from validaciones import Validar_Texto, Validar_Cantidad, Validar_Dinero, Validar_Opcion, Validar_Confirmacion
+
 def Buscar_Por_Codigo(Productos, Codigo):
     for i in range(len(Productos)):
         if Productos[i]["Codigo"] == Codigo:
             return Productos[i]
     return None
+
 def Agregar_Al_Carrito(Productos, Carrito):
-    Codigo = input("Ingrese el código del producto: ").strip()
+    Codigo = Validar_Texto("Ingrese el código del producto: ")
     Producto = Buscar_Por_Codigo(Productos, Codigo)
     if Producto == None:
-        print("No se encontró el producto.")
+        print("Error: no se encontró el producto.")
         return
     print("Producto:", Producto["Nombre"])
     print("Precio:", Producto["Precio"])
     print("Stock disponible:", Producto["Stock"])
-    try:
-        Cantidad = int(input("Ingrese la cantidad: "))
-        if Cantidad <= 0:
-            print("La cantidad debe ser mayor que cero.")
-            return
-        Cantidad_Carrito = 0
-        for i in range(len(Carrito)):
-            if Carrito[i]["Codigo"] == Codigo:
-                Cantidad_Carrito = Carrito[i]["Cantidad"]
-        if Cantidad + Cantidad_Carrito > Producto["Stock"]:
-            print("No hay suficiente stock disponible.")
-            return
-        Encontrado = False
-        for i in range(len(Carrito)):
-            if Carrito[i]["Codigo"] == Codigo:
-                Carrito[i]["Cantidad"] += Cantidad
-                Carrito[i]["Subtotal"] = Carrito[i]["Cantidad"] * Producto["Precio"]
-                Encontrado = True
-        if Encontrado == False:
-            Carrito.append({
-                "Codigo": Producto["Codigo"],
-                "Nombre": Producto["Nombre"],
-                "Precio": Producto["Precio"],
-                "Cantidad": Cantidad,
-                "Subtotal": Producto["Precio"] * Cantidad
-            })
-        print("Producto agregado al carrito.")
-    except ValueError:
-        print("Error: debe ingresar una cantidad entera.")
+    Cantidad_Carrito = 0
+    for i in range(len(Carrito)):
+        if Carrito[i]["Codigo"] == Codigo:
+            Cantidad_Carrito = Carrito[i]["Cantidad"]
+    Disponible = Producto["Stock"] - Cantidad_Carrito
+    if Disponible <= 0:
+        print("Error: ya no hay stock disponible de este producto en el carrito.")
+        return
+    Cantidad = Validar_Cantidad("Ingrese la cantidad: ", Disponible)
+    Encontrado = False
+    for i in range(len(Carrito)):
+        if Carrito[i]["Codigo"] == Codigo:
+            Carrito[i]["Cantidad"] += Cantidad
+            Carrito[i]["Subtotal"] = Carrito[i]["Cantidad"] * Producto["Precio"]
+            Encontrado = True
+    if Encontrado == False:
+        Carrito.append({
+            "Codigo": Producto["Codigo"],
+            "Nombre": Producto["Nombre"],
+            "Precio": Producto["Precio"],
+            "Cantidad": Cantidad,
+            "Subtotal": Producto["Precio"] * Cantidad
+        })
+    print("Producto agregado al carrito.")
+
 def Mostrar_Carrito(Carrito):
     if len(Carrito) == 0:
         print("El carrito está vacío.")
@@ -55,11 +54,13 @@ def Mostrar_Carrito(Carrito):
         print("Precio:", Carrito[i]["Precio"])
         print("Cantidad:", Carrito[i]["Cantidad"])
         print("Subtotal:", Carrito[i]["Subtotal"])
+
 def Calcular_Subtotal(Carrito):
     Subtotal = 0
     for i in range(len(Carrito)):
         Subtotal += Carrito[i]["Subtotal"]
     return Subtotal
+
 def Calcular_Descuento(Subtotal):
     if Subtotal >= 100000:
         Descuento = Subtotal * 0.10
@@ -68,6 +69,7 @@ def Calcular_Descuento(Subtotal):
     else:
         Descuento = 0
     return Descuento
+
 def Mostrar_Resumen(Carrito):
     Subtotal = Calcular_Subtotal(Carrito)
     Descuento = Calcular_Descuento(Subtotal)
@@ -77,32 +79,27 @@ def Mostrar_Resumen(Carrito):
     print("Descuento:", Descuento)
     print("Total a pagar:", Total)
     return Total
+
 def Recibir_Pago(Total):
     Pago = 0
     while Pago < Total:
-        try:
-            Dinero = float(input("\nIngrese el dinero recibido: $"))
-            if Dinero <= 0:
-                print("El dinero debe ser mayor que cero.")
-            else:
-                Pago += Dinero
-                print("Dinero acumulado:", Pago)
-                if Pago < Total:
-                    print("Falta por pagar:", Total - Pago)
-        except ValueError:
-            print("Error: ingrese un valor numérico.")
+        Dinero = Validar_Dinero("\nIngrese el dinero recibido: $")
+        Pago += Dinero
+        print("Dinero acumulado:", Pago)
+        if Pago < Total:
+            print("Falta por pagar:", Total - Pago)
     Cambio = Pago - Total
     print("\nPago completado.")
     print("Total:", Total)
     print("Dinero recibido:", Pago)
     print("Cambio:", Cambio)
     return Pago, Cambio
+
 def Confirmar_Venta(Productos, Carrito, Total):
     if len(Carrito) == 0:
         print("No hay productos en el carrito.")
         return
-    Confirmacion = input("\n¿Desea confirmar la venta? (S/N): ").strip().lower()
-    if Confirmacion != "s":
+    if Validar_Confirmacion("\n¿Desea confirmar la venta? (S/N): ") == False:
         print("Venta cancelada.")
         return
     for i in range(len(Carrito)):
@@ -125,6 +122,7 @@ def Confirmar_Venta(Productos, Carrito, Total):
         Archivo.write(Registro + "\n")
     print("\n¡Venta registrada correctamente!")
     print("Inventario actualizado.")
+
 def Menu_Ventas():
     Productos = Cargar_Inventario()
     Carrito = []
@@ -137,7 +135,7 @@ def Menu_Ventas():
         print("2. Mostrar carrito")
         print("3. Finalizar compra")
         print("4. Cancelar venta")
-        Opcion = input("Seleccione una opción: ")
+        Opcion = Validar_Opcion("Seleccione una opción: ", ["1", "2", "3", "4"])
         if Opcion == "1":
             Agregar_Al_Carrito(Productos, Carrito)
         elif Opcion == "2":
@@ -153,6 +151,3 @@ def Menu_Ventas():
         elif Opcion == "4":
             print("Venta cancelada.")
             break
-        else:
-            print("Opción incorrecta, Eliga una opción que aparezca en el menú porfavor.")
-            
