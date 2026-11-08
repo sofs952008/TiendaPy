@@ -1,0 +1,3 @@
+LAC001|Leche entera 1L|Lacteos|4200.0|35|10|Alqueria
+BEB003|Gaseosa 1.5L|Bebidas|5800.0|8|12|Postobon
+ASE002|Detergente 500g|Aseo|7500.0|20|5|Distribuidora Norte
