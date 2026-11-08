@@ -1,6 +1,9 @@
 # Apartado de reportes
-from inventario import Cargar_Inventario
+from persistencia import Cargar_Inventario, Cargar_Ventas
+from validaciones import Validar_Opcion
 from datetime import date
+
+
 def Mostrar_Alertas():
     Productos = Cargar_Inventario()
     Proveedores = []
@@ -29,83 +32,80 @@ def Mostrar_Alertas():
                     print("Estado: AGOTADO")
                 else:
                     print("Estado: STOCK BAJO")
+
+
 def Mostrar_Reportes():
     Productos = Cargar_Inventario()
+    Ventas = Cargar_Ventas()
     Fecha_Hoy = str(date.today())
     Total_Vendido = 0
     Cantidad_Ventas = 0
     Cantidad_Productos = {}
     Cantidad_Categorias = {}
-    try:
-        with open("DATA/ventas.txt", "r") as Archivo:
-            for Linea in Archivo:
-                Partes = Linea.strip().split("|")
-                if len(Partes) != 3:
-                    continue
-                Fecha = Partes[0]
-                if Fecha != Fecha_Hoy:
-                    continue
-                try:
-                    Total = float(Partes[1])
-                    Detalles = Partes[2].split(";")
-                    Productos_Venta = []
-                    for Detalle in Detalles:
-                        Datos = Detalle.split(":")
-                        if len(Datos) != 2:
-                            raise ValueError
-                        Codigo = Datos[0]
-                        Cantidad = int(Datos[1])
-                        if Cantidad <= 0:
-                            raise ValueError
-                        Productos_Venta.append([Codigo, Cantidad])
-                    Total_Vendido += Total
-                    Cantidad_Ventas += 1
-                    for i in range(len(Productos_Venta)):
-                        Codigo = Productos_Venta[i][0]
-                        Cantidad = Productos_Venta[i][1]
-                        if Codigo not in Cantidad_Productos:
-                            Cantidad_Productos[Codigo] = 0
-                        Cantidad_Productos[Codigo] += Cantidad
-                        for j in range(len(Productos)):
-                            if Productos[j]["Codigo"] == Codigo:
-                                Categoria = Productos[j]["Categoria"]
-                                if Categoria not in Cantidad_Categorias:
-                                    Cantidad_Categorias[Categoria] = 0
-                                Cantidad_Categorias[Categoria] += Cantidad
-                                break
-                except ValueError:
-                    print("Se omitió un registro de venta incorrecto.")
-    except FileNotFoundError:
-        print("\nNo existe el archivo de ventas.")
-        return
+    for Venta in Ventas:
+        if Venta["Fecha"] != Fecha_Hoy:
+            continue
+        Total_Vendido += Venta["Total"]
+        Cantidad_Ventas += 1
+        for Item in Venta["Items"]:
+            Codigo = Item["Codigo"]
+            Cantidad = Item["Cantidad"]
+            if Codigo not in Cantidad_Productos:
+                Cantidad_Productos[Codigo] = 0
+            Cantidad_Productos[Codigo] += Cantidad
+            for j in range(len(Productos)):
+                if Productos[j]["Codigo"] == Codigo:
+                    Categoria = Productos[j]["Categoria"]
+                    if Categoria not in Cantidad_Categorias:
+                        Cantidad_Categorias[Categoria] = 0
+                    Cantidad_Categorias[Categoria] += Cantidad
+                    break
+    print("\nCierre del día")
+    print("Fecha:", Fecha_Hoy)
     if Cantidad_Ventas == 0:
-        print("\nReporte de ventas diario")
         print("No se registraron ventas durante el día.")
         return
     Promedio_Venta = Total_Vendido / Cantidad_Ventas
-    print("\nReporte de ventas diario")
-    print("Fecha:", Fecha_Hoy)
     print("Total vendido: $", round(Total_Vendido, 2))
     print("Cantidad de transacciones:", Cantidad_Ventas)
     print("Ticket promedio: $", round(Promedio_Venta, 2))
-    if len(Cantidad_Productos) > 0:
-        Mayor_Cantidad = max(Cantidad_Productos.values())
-        print("\nProductos más vendidos:")
-        for Codigo in Cantidad_Productos:
-            if Cantidad_Productos[Codigo] == Mayor_Cantidad:
-                Encontrado = False
-                for i in range(len(Productos)):
-                    if Productos[i]["Codigo"] == Codigo:
-                        print("Producto:", Productos[i]["Nombre"])
-                        Encontrado = True
-                        break
-                if not Encontrado:
-                    print("Código:", Codigo)
-                print("Unidades vendidas:", Mayor_Cantidad)
-    print("\nCategorias con movimientos:")
+    Mayor_Cantidad = max(Cantidad_Productos.values())
+    print("\nProducto(s) más vendido(s):")
+    for Codigo in Cantidad_Productos:
+        if Cantidad_Productos[Codigo] == Mayor_Cantidad:
+            Nombre = Codigo
+            for i in range(len(Productos)):
+                if Productos[i]["Codigo"] == Codigo:
+                    Nombre = Productos[i]["Nombre"]
+                    break
+            print("-", Nombre, "|", Mayor_Cantidad, "unidades")
+    print("\nProductos sin ventas hoy:")
+    Hay_Sin_Ventas = False
+    for i in range(len(Productos)):
+        if Productos[i]["Codigo"] not in Cantidad_Productos:
+            print("-", Productos[i]["Codigo"], Productos[i]["Nombre"])
+            Hay_Sin_Ventas = True
+    if not Hay_Sin_Ventas:
+        print("Todos los productos tuvieron ventas.")
+    print("\nCategorías con movimiento:")
     if len(Cantidad_Categorias) == 0:
-        print("No hay categorías disponibles para consultar.")
+        print("No hay categorías con movimiento.")
     else:
         for Categoria in Cantidad_Categorias:
-            print(Categoria, "-", Cantidad_Categorias[Categoria],
+            print("-", Categoria, ":", Cantidad_Categorias[Categoria],
                   "unidades vendidas")
+
+
+def Menu_Reportes():
+    while True:
+        print("\nReportes")
+        print("1. Alertas de stock")
+        print("2. Cierre del día")
+        print("3. Volver al menú principal")
+        Opcion = Validar_Opcion("Seleccione una opción: ", ["1", "2", "3"])
+        if Opcion == "1":
+            Mostrar_Alertas()
+        elif Opcion == "2":
+            Mostrar_Reportes()
+        elif Opcion == "3":
+            break
