@@ -13,7 +13,7 @@ def Asegurar_Carpeta():
 def Limpiar_Campo(Texto):
     return str(Texto).replace("|", "/").replace("\n", " ")
 
-
+# Parte que interactua con el inventario
 def Linea_a_Producto(Linea):
 
     Datos = Linea.strip().split("|")
@@ -91,8 +91,7 @@ def Guardar_Inventario(Productos):
             os.remove(Temporal)
         return False
 
-
-
+# Parte que interactua con las ventas
 def Registrar_Venta(Fecha, Total, Carrito):
     """Agrega una venta al final de ventas.txt con el formato
     fecha|total|codigo:cantidad;codigo:cantidad"""
