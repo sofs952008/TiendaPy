@@ -1,8 +1,8 @@
- # Este es el main
+# Este es el main
 from inventario import Menu_Inventario
 from ventas import Menu_Ventas
 from validaciones import Validar_Opcion
-from reportes import Mostrar_Alertas
+from reportes import Menu_Reportes
 def mostrar_menu():
     print("Bienvenido a TiendaPy")
     print("1. Gestionar inventario")
@@ -19,7 +19,7 @@ def main():
         elif opcion == "2":
             Menu_Ventas()
         elif opcion == "3":
-            Mostrar_Alertas()
+            Menu_Reportes()
         elif opcion == "4":
             print("Gracias por utilizar esta tienda.")
             break

@@ -1,6 +1,6 @@
 # Este es el apartado de ventas
 from datetime import date
-from inventario import Cargar_Inventario, Guardar_Inventario
+from persistencia import Cargar_Inventario, Guardar_Inventario, Registrar_Venta
 from validaciones import Validar_Texto, Validar_Cantidad, Validar_Dinero, Validar_Opcion, Validar_Confirmacion
 
 def Buscar_Por_Codigo(Productos, Codigo):
@@ -81,13 +81,12 @@ def Mostrar_Resumen(Carrito):
     return Total
 
 def Recibir_Pago(Total):
-    Pago = 0
-    while Pago < Total:
-        Dinero = Validar_Dinero("\nIngrese el dinero recibido: $")
-        Pago += Dinero
-        print("Dinero acumulado:", Pago)
-        if Pago < Total:
-            print("Falta por pagar:", Total - Pago)
+    while True:
+        Pago = Validar_Dinero("\nIngrese el dinero recibido: $")
+        if Pago >= Total:
+            break
+        print("Pago insuficiente. Faltan:", Total - Pago)
+        print("Intente de nuevo.")
     Cambio = Pago - Total
     print("\nPago completado.")
     print("Total:", Total)
@@ -111,15 +110,7 @@ def Confirmar_Venta(Productos, Carrito, Total):
         Producto = Buscar_Por_Codigo(Productos, Carrito[i]["Codigo"])
         Producto["Stock"] -= Carrito[i]["Cantidad"]
     Guardar_Inventario(Productos)
-    Fecha = date.today()
-    Detalles = []
-    for i in range(len(Carrito)):
-        Detalles.append(
-            Carrito[i]["Codigo"] + ":" + str(Carrito[i]["Cantidad"])
-        )
-    Registro = str(Fecha) + "|" + str(Total) + "|" + ";".join(Detalles)
-    with open("DATA/ventas.txt", "a") as Archivo:
-        Archivo.write(Registro + "\n")
+    Registrar_Venta(date.today(), Total, Carrito)
     print("\n¡Venta registrada correctamente!")
     print("Inventario actualizado.")
 
