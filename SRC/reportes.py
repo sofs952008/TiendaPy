@@ -1,3 +1,4 @@
+# Apartado de reportes
 from inventario import Cargar_Inventario
 from datetime import date
 def Mostrar_Alertas():

@@ -1,5 +1,4 @@
 # Validaciones
-
 def Validar_Texto(Mensaje):
     while True:
         Texto = input(Mensaje).strip()
